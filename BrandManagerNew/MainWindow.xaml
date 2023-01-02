@@ -1,0 +1,46 @@
+﻿<Window x:Class="BrandManagerNew.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BrandManagerNew"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.Column="0" >
+            <Button x:Name="createBrandButton" Content="Create brand" HorizontalAlignment="Center" VerticalAlignment="Top" Click="Button_Click_CreateBrand" Width="80" Margin="5,5,5,10"/>
+            <Button x:Name="readBrandButton" Content="Read brands" HorizontalAlignment="Center" VerticalAlignment="Top" Width="80" Margin="5,5,5,10" Click="Button_Click_ReadBrands"/>
+            <Button x:Name="updateBrandButton" Content="Update brand" HorizontalAlignment="Center" VerticalAlignment="Top" Width="80" Click="Button_Click_UpdateBrand" Margin="5,5,5,10"/>
+            <Button x:Name="deleteButton" Content="Delete brand" HorizontalAlignment="Center" VerticalAlignment="Top" Width="80" Click="Button_Click_DeleteBrand" Margin="5,5,5,10"/>
+        </StackPanel>
+
+        <Label x:Name="brandNameLabel" HorizontalAlignment="Left" Margin="21,47,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="0">
+            <UIElement.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </UIElement.RenderTransform> Enter brand name:
+        </Label>
+        <TextBox x:Name="brandNameTextBox" Grid.Column="1" HorizontalAlignment="Left" Margin="133,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Row="0"></TextBox>
+        <Label x:Name="isEnabledLabel" Grid.Column="1" Content="Is Enabled?" HorizontalAlignment="Left" Margin="58,72,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.175,0.014" Grid.Row="0"/>
+        <CheckBox x:Name="isEnabledBox" Grid.Column="1" Content="" HorizontalAlignment="Left" Margin="133,79,0,0" VerticalAlignment="Top" Grid.Row="0"/>
+        <Button x:Name="submitButton" Grid.Column="1" Content="Submit" HorizontalAlignment="Left" VerticalAlignment="Top" Click="SubmitButton_Click" Grid.Row="0" Margin="108,104,0,0" Background="#FF39BB53"/>
+        <Label x:Name="idLabel" Grid.Column="1" Content="ID" HorizontalAlignment="Left" Margin="105,19,0,0" VerticalAlignment="Top" Grid.Row="0" RenderTransformOrigin="1.876,0.508"/>
+        <TextBox x:Name="idTextBox" Grid.Column="1" HorizontalAlignment="Left" Margin="133,23,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Row="0"/>
+
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" Grid.Row="1" Grid.Column="1" />
+
+    </Grid>
+</Window>
