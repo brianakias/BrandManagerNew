@@ -184,20 +184,26 @@ namespace BrandManagerNew
 
             if (inCreateState)
             {
+                UserInputValidation userInputValidation = new UserInputValidation();
+                userInputValidation.CheckIfBrandNameIsValid(brand.Name);
                 brandRepository.CreateRecord(brand);
                 MessageBox.Show("Record created", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inUpdateState)
             {
                 if (idTextBox.Text == "") return;
+                UserInputValidation userInputValidation = new UserInputValidation();
                 brand.Id = int.Parse(idTextBox.Text);
+                userInputValidation.CheckIfIdIsValid(brand.Id);
                 brandRepository.UpdateRecord(brand);
                 MessageBox.Show("Record updated", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inDeleteState)
             {
                 if (idTextBox.Text == "") return;
+                UserInputValidation userInputValidation = new UserInputValidation();
                 int id = int.Parse(idTextBox.Text);
+                userInputValidation.CheckIfIdIsValid(brand.Id);
                 brandRepository.DeleteRecord(id);
                 MessageBox.Show("Record deleted", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }

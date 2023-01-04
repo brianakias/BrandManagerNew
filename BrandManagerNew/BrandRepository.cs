@@ -55,6 +55,53 @@ namespace BrandManagerNew
             }
         }
 
+        public List<string> ReadBrandNames()
+        {
+            List<string> brandNames = new List<string>();
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (NpgsqlCommand command = new NpgsqlCommand("SELECT name FROM brands", connection))
+                {
+                    using (NpgsqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            brandNames.Add(reader.GetString(0));
+                        }
+                    }
+                }
+                connection.Close();
+                return brandNames;
+            }
+        }
+
+        public List<int> ReadIDs()
+        {
+            List<int> ids = new List<int>();
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (NpgsqlCommand command = new NpgsqlCommand("SELECT id FROM brands", connection))
+                {
+                    using (NpgsqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ids.Add(reader.GetInt16(0));
+                        }
+                    }
+                }
+                connection.Close();
+                return ids;
+            }
+
+        }
+
         public void UpdateRecord(Brand brand)
         {
             using (var connection = new NpgsqlConnection(connectionString))
