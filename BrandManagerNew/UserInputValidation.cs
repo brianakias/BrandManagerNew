@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BrandManagerNew
 {
@@ -13,14 +14,9 @@ namespace BrandManagerNew
 
         private void CheckIfBrandNameHasInvalidCharacters(string brandName)
         {
-            for (int i = 0; i < brandName.Length; i++)
+            if (!brandName.All(c => char.IsLetter(c) || c == '-' || char.IsWhiteSpace(c)))
             {
-                char c = brandName[i];
-
-                if (!(char.IsLetter(c) || c == '-' || char.IsWhiteSpace(c)))
-                {
-                    throw new InvalidBrandNameException("The brand name should be consisted of letters, whitespaces and dashes ( - ) only");
-                }
+                throw new InvalidBrandNameException("The brand name should be consisted of letters, whitespaces and dashes ( - ) only");
             }
         }
 
