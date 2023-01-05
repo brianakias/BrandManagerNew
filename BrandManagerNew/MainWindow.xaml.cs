@@ -194,7 +194,7 @@ namespace BrandManagerNew
                 if (idTextBox.Text == "") return;
                 UserInputValidation userInputValidation = new UserInputValidation();
                 brand.Id = int.Parse(idTextBox.Text);
-                userInputValidation.CheckIfIdIsValid(brand.Id);
+                userInputValidation.CheckIfIDExists(brand.Id);
                 brandRepository.UpdateRecord(brand);
                 MessageBox.Show("Record updated", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -203,7 +203,7 @@ namespace BrandManagerNew
                 if (idTextBox.Text == "") return;
                 UserInputValidation userInputValidation = new UserInputValidation();
                 int id = int.Parse(idTextBox.Text);
-                userInputValidation.CheckIfIdIsValid(brand.Id);
+                userInputValidation.CheckIfIDExists(brand.Id);
                 brandRepository.DeleteRecord(id);
                 MessageBox.Show("Record deleted", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
