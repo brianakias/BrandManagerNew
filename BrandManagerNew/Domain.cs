@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BrandManagerNew
 {
-    public class Domain
+    public class Domain : IDomain
     {
         private UserInputValidation validation { get; set; }
         public BrandRepository brandRepo { get; set; }
@@ -26,11 +26,20 @@ namespace BrandManagerNew
         public Brand PrepareObjectForUpdating(int id, string brandName, bool flag)
         {
             List<int> ids = brandRepo.ReadIDs();
-            validation.CheckIfIDExists(id);
+            validation.CheckIfIDExists(id, ids);
             validation.CheckIfBrandNameHasInvalidCharacters(brandName);
             List<string> brandNames = brandRepo.ReadBrandNames();
             validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
-            return new Brand(brandName, flag);
+            Brand brand = new Brand(brandName, flag);
+            brand.Id = id;
+            return brand;
+        }
+
+        public int PrepareObjectForDeletion(int id)
+        {
+            List<int> ids = brandRepo.ReadIDs();
+            validation.CheckIfIDExists(id, ids);
+            return id;
         }
     }
 }

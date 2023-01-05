@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace BrandManagerNew
 {
-    internal interface IDomain
+    public interface IDomain
     {
+        Brand PrepareObjectForInsertion(string brandName, bool flag);
+        Brand PrepareObjectForUpdating(int id, string brandName, bool flag);
+        int PrepareObjectForDeletion(int id);
     }
 }
