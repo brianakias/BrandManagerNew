@@ -40,7 +40,7 @@ namespace BrandManagerNew
         public void CheckIfIdIsValid(int id)
         {
             CheckIfIDHasInvalidCharacters(id);
-
+            CheckIfIDExists(id);
         }
 
         private void CheckIfIDHasInvalidCharacters(int id)
@@ -63,7 +63,8 @@ namespace BrandManagerNew
             List<int> ids = brandRepo.ReadIDs();
             if (!ids.Contains(id))
             {
-                throw new NonExistentIDException($"")
+                string ids_string = string.Join(", ", ids);
+                throw new NonExistentIDException($"Could not find id '{id}' in the database. Consider passing an id from the list: {ids_string}");
             }
         }
     }

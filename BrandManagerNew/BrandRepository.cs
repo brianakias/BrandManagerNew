@@ -1,13 +1,13 @@
 ﻿
 using Npgsql;
+using System;
 using System.Collections.Generic;
 
 namespace BrandManagerNew
 {
     public class BrandRepository : IDataAccess
     {
-        //public static string connectionString = "Server=localhost;Port=5432;Database=postgres;UserId=postgres;Password=password";
-        public static string connectionString = "Server=localhost;Port=5432;Database=mydatabase;UserId=postgres;Password=L.a_#r_)asd";
+        private static string connectionString = Environment.GetEnvironmentVariable("postgresConnectionString");
 
         public void CreateRecord(Brand brand)
         {
@@ -142,8 +142,8 @@ namespace BrandManagerNew
 
         public void CreateTableIfNotExists(string tableName)
         {
-            //string connectionString = "Server=localhost;Port=5432;Database=postgres;UserId=postgres;Password=password;";
-            string connectionString = "Server=localhost;Port=5432;Database=mydatabase;UserId=postgres;Password=L.a_#r_)asd";
+            ////string connectionString = "Server=localhost;Port=5432;Database=postgres;UserId=postgres;Password=password;";
+            //string connectionString = "Server=localhost;Port=5432;Database=mydatabase;UserId=postgres;Password=L.a_#r_)asd";
 
             using (var connection = new NpgsqlConnection(connectionString))
             {

@@ -104,6 +104,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="InvalidBrandNameException.cs" />
+    <Compile Include="InvalidIDFormatException.cs" />
+    <Compile Include="NameAlreadyExistsException.cs" />
+    <Compile Include="NonExistentIDException.cs" />
     <Compile Include="UserInputValidation.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
