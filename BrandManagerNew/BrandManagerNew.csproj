@@ -103,6 +103,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Domain.cs" />
+    <Compile Include="IDomain.cs" />
     <Compile Include="InvalidBrandNameException.cs" />
     <Compile Include="InvalidIDFormatException.cs" />
     <Compile Include="NameAlreadyExistsException.cs" />

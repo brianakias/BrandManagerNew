@@ -6,57 +6,29 @@ namespace BrandManagerNew
 {
     public class UserInputValidation
     {
-        public void CheckIfBrandNameIsValid(string brandName)
+        public void CheckIfBrandNameHasInvalidCharacters(string brandName)
         {
-            CheckIfBrandNameHasInvalidCharacters(brandName);
-            CheckIfBrandNameAlreadyExists(brandName);
-        }
+            bool hasInvalidCharacters = !brandName.All(c => char.IsLetter(c) || c == '-' || char.IsWhiteSpace(c));
 
-        private void CheckIfBrandNameHasInvalidCharacters(string brandName)
-        {
-            if (!brandName.All(c => char.IsLetter(c) || c == '-' || char.IsWhiteSpace(c)))
+            if (hasInvalidCharacters)
             {
                 throw new InvalidBrandNameException("The brand name should be consisted of letters, whitespaces and dashes ( - ) only");
             }
         }
 
-        private void CheckIfBrandNameAlreadyExists(string brandName)
+        public void CheckIfBrandNameAlreadyExists(string brandName, List<string> brandNames)
         {
-            BrandRepository brandRepo = new BrandRepository();
-            List<string> brandNames = brandRepo.ReadBrandNames();
             brandNames.ForEach(name =>
             {
-                if (name == brandName)
+                if (name.ToLower() == brandName.ToLower())
                 {
                     throw new NameAlreadyExistsException($"A brand with name '{brandName}' already exists.");
                 }
             });
         }
 
-        public void CheckIfIdIsValid(int id)
+        public void CheckIfIDExists(int id, List<int> ids)
         {
-            CheckIfIDHasInvalidCharacters(id);
-            CheckIfIDExists(id);
-        }
-
-        private void CheckIfIDHasInvalidCharacters(int id)
-        {
-            string id_string = id.ToString();
-            for (int i = 0; i < id_string.Length; i++)
-            {
-                char c = id_string[i];
-
-                if (!char.IsDigit(c))
-                {
-                    throw new InvalidIDFormatException($"Invalid id '{id}' was passed. ID must be consisted of decimal numbers only");
-                }
-            }
-        }
-
-        private void CheckIfIDExists(int id)
-        {
-            BrandRepository brandRepo = new BrandRepository();
-            List<int> ids = brandRepo.ReadIDs();
             if (!ids.Contains(id))
             {
                 string ids_string = string.Join(", ", ids);
