@@ -7,9 +7,11 @@ namespace BrandManagerNew
 {
     public class BrandRepository : IDataAccess
     {
+        private int RecordsAffected { get; set; }
+
         private static string connectionString = Environment.GetEnvironmentVariable("postgresConnectionString");
 
-        public void CreateRecord(Brand brand)
+        public int CreateRecord(Brand brand)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {
@@ -21,11 +23,13 @@ namespace BrandManagerNew
                     command.CommandText = "INSERT INTO brands (name, is_enabled) VALUES (@name, @is_enabled)";
                     command.Parameters.AddWithValue("@name", brand.Name);
                     command.Parameters.AddWithValue("@is_enabled", brand.IsEnabled);
-                    command.ExecuteNonQuery();
+                    RecordsAffected = command.ExecuteNonQuery();
                 }
 
                 connection.Close();
             }
+
+            return RecordsAffected;
         }
 
         public List<Brand> ReadRecords()
@@ -42,10 +46,8 @@ namespace BrandManagerNew
                     {
                         while (reader.Read())
                         {
-                            Brand brand = new Brand();
+                            Brand brand = new Brand(reader.GetString(1), reader.GetBoolean(2));
                             brand.Id = reader.GetInt32(0);
-                            brand.Name = reader.GetString(1);
-                            brand.IsEnabled = reader.GetBoolean(2);
                             brands.Add(brand);
                         }
                     }
@@ -102,7 +104,7 @@ namespace BrandManagerNew
 
         }
 
-        public void UpdateRecord(Brand brand)
+        public int UpdateRecord(Brand brand)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {
@@ -115,14 +117,16 @@ namespace BrandManagerNew
                     command.Parameters.AddWithValue("id", brand.Id);
                     command.Parameters.AddWithValue("@name", brand.Name);
                     command.Parameters.AddWithValue("@is_enabled", brand.IsEnabled);
-                    command.ExecuteNonQuery();
+                    RecordsAffected = command.ExecuteNonQuery();
                 }
 
                 connection.Close();
             }
+
+            return RecordsAffected;
         }
 
-        public void DeleteRecord(int id)
+        public int DeleteRecord(int id)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {
@@ -133,11 +137,13 @@ namespace BrandManagerNew
                     command.Connection = connection;
                     command.CommandText = "DELETE FROM brands WHERE id = @id";
                     command.Parameters.AddWithValue("id", id);
-                    command.ExecuteNonQuery();
+                    RecordsAffected = command.ExecuteNonQuery();
                 }
 
                 connection.Close();
             }
+
+            return RecordsAffected;
         }
 
         public void CreateTableIfNotExists(string tableName)

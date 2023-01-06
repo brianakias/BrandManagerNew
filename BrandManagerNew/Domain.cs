@@ -41,5 +41,13 @@ namespace BrandManagerNew
             validation.CheckIfIDExists(id, ids);
             return id;
         }
+
+        public void ConfirmOneRecordWasAffected(int recordsAffected)
+        {
+            if (recordsAffected != 1)
+            {
+                throw new UnexpectedRecordsAffectedException($"Wrong number of records affected. Expected: 1 record, actual: {recordsAffected} records instead");
+            }
+        }
     }
 }

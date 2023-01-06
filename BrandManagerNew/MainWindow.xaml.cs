@@ -181,7 +181,8 @@ namespace BrandManagerNew
             if (inCreateState)
             {
                 Brand brand = Domain.PrepareObjectForInsertion(name, flag);
-                brandRepository.CreateRecord(brand);
+                int recordsAffected = brandRepository.CreateRecord(brand);
+                Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record created", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inUpdateState)

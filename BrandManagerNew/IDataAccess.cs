@@ -6,12 +6,12 @@ namespace BrandManagerNew
 {
     public interface IDataAccess
     {
-        void CreateRecord(Brand brand);
+        int CreateRecord(Brand brand);
         List<Brand> ReadRecords();
         List<string> ReadBrandNames();
         List<int> ReadIDs();
-        void UpdateRecord(Brand brand);
-        void DeleteRecord(int id);
+        int UpdateRecord(Brand brand);
+        int DeleteRecord(int id);
         void CreateTableIfNotExists(string tableName);
 
     }

@@ -12,6 +12,5 @@ namespace BrandManagerNew
             Name = brandName;
             IsEnabled = flag;
         }
-
     }
 }
