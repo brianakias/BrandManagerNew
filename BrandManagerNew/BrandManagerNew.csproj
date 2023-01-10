@@ -105,11 +105,11 @@
     </ApplicationDefinition>
     <Compile Include="Domain.cs" />
     <Compile Include="IDomain.cs" />
-    <Compile Include="InvalidBrandNameException.cs" />
-    <Compile Include="InvalidIDFormatException.cs" />
-    <Compile Include="NameAlreadyExistsException.cs" />
-    <Compile Include="NonExistentIDException.cs" />
-    <Compile Include="UnexpectedRecordsAffectedException.cs" />
+    <Compile Include="Exceptions\InvalidBrandNameException.cs" />
+    <Compile Include="Exceptions\InvalidIDFormatException.cs" />
+    <Compile Include="Exceptions\NameAlreadyExistsException.cs" />
+    <Compile Include="Exceptions\NonExistentIDException.cs" />
+    <Compile Include="Exceptions\UnexpectedRecordsAffectedException.cs" />
     <Compile Include="UserInputValidation.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
