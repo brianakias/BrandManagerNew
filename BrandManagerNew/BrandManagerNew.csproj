@@ -104,7 +104,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Domain.cs" />
-    <Compile Include="IDomain.cs" />
+    <Compile Include="Interfaces\IDomain.cs" />
     <Compile Include="Exceptions\InvalidBrandNameException.cs" />
     <Compile Include="Exceptions\InvalidIDFormatException.cs" />
     <Compile Include="Exceptions\NameAlreadyExistsException.cs" />
@@ -121,7 +121,7 @@
     </Compile>
     <Compile Include="Brand.cs" />
     <Compile Include="BrandRepository.cs" />
-    <Compile Include="IDataAccess.cs" />
+    <Compile Include="Interfaces\IDataAccess.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
