@@ -1,4 +1,5 @@
 ﻿
+using Moq;
 using System.Collections.Generic;
 
 namespace BrandManagerNew
@@ -7,13 +8,13 @@ namespace BrandManagerNew
     {
         private UserInputValidation Validation { get; set; }
         public BrandRepository BrandRepo { get; set; }
-
         public Domain(UserInputValidation validation, BrandRepository brandRepo)
         {
             Validation = validation;
             BrandRepo = brandRepo;
 
         }
+
 
         public Brand PrepareObjectForInsertion(string brandName, bool flag)
         {
