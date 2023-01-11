@@ -12,6 +12,7 @@ namespace BrandManagerNew
     {
         public Domain Domain { get; set; }
         public BrandRepository brandRepository { get; set; }
+        public UserInputValidation validation { get; set; }
         public MainWindow()
         {
             InitializeComponent();
@@ -176,7 +177,7 @@ namespace BrandManagerNew
             int id = idTextBox.Text == "" ? 0 : int.Parse(idTextBox.Text);
             string name = brandNameTextBox.Text;
             bool flag = (bool)isEnabledBox.IsChecked;
-            Domain = new Domain();
+            Domain = new Domain(validation, brandRepository);
 
             if (inCreateState)
             {

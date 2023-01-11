@@ -5,31 +5,31 @@ namespace BrandManagerNew
 {
     public class Domain : IDomain
     {
-        private UserInputValidation validation { get; set; }
-        public BrandRepository brandRepo { get; set; }
+        private UserInputValidation Validation { get; set; }
+        public BrandRepository BrandRepo { get; set; }
 
-        public Domain()
+        public Domain(UserInputValidation validation, BrandRepository brandRepo)
         {
-            validation = new UserInputValidation();
-            brandRepo = new BrandRepository();
+            Validation = validation;
+            BrandRepo = brandRepo;
 
         }
 
         public Brand PrepareObjectForInsertion(string brandName, bool flag)
         {
-            validation.CheckIfBrandNameHasInvalidCharacters(brandName);
-            List<string> brandNames = brandRepo.ReadBrandNames();
-            validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            Validation.CheckIfBrandNameHasInvalidCharacters(brandName);
+            List<string> brandNames = BrandRepo.ReadBrandNames();
+            Validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
             return new Brand(brandName, flag);
         }
 
         public Brand PrepareObjectForUpdating(int id, string brandName, bool flag)
         {
-            List<int> ids = brandRepo.ReadIDs();
-            validation.CheckIfIDExists(id, ids);
-            validation.CheckIfBrandNameHasInvalidCharacters(brandName);
-            List<string> brandNames = brandRepo.ReadBrandNames();
-            validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            List<int> ids = BrandRepo.ReadIDs();
+            Validation.CheckIfIDExists(id, ids);
+            Validation.CheckIfBrandNameHasInvalidCharacters(brandName);
+            List<string> brandNames = BrandRepo.ReadBrandNames();
+            Validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
             Brand brand = new Brand(brandName, flag);
             brand.Id = id;
             return brand;
@@ -37,8 +37,8 @@ namespace BrandManagerNew
 
         public int PrepareObjectForDeletion(int id)
         {
-            List<int> ids = brandRepo.ReadIDs();
-            validation.CheckIfIDExists(id, ids);
+            List<int> ids = BrandRepo.ReadIDs();
+            Validation.CheckIfIDExists(id, ids);
             return id;
         }
 

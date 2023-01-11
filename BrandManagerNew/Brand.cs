@@ -7,10 +7,10 @@ namespace BrandManagerNew
         public string Name { get; set; }
         public bool IsEnabled { get; set; }
 
-        public Brand(string brandName, bool flag)
+        public Brand(string name, bool isEnabled)
         {
-            Name = brandName;
-            IsEnabled = flag;
+            Name = name;
+            IsEnabled = isEnabled;
         }
     }
 }
