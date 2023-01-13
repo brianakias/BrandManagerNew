@@ -177,6 +177,7 @@ namespace BrandManagerNew
             int id = idTextBox.Text == "" ? 0 : int.Parse(idTextBox.Text);
             string name = brandNameTextBox.Text;
             bool flag = (bool)isEnabledBox.IsChecked;
+            validation = new UserInputValidation();
             Domain = new Domain(validation, brandRepository);
 
             if (inCreateState)
