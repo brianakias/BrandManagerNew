@@ -45,5 +45,18 @@ namespace BrandManagerNew
                 throw new NonExistentIDException($"Could not find id '{id}' in the database. Consider passing an id from the list: {ids_string}");
             }
         }
+
+        public int CheckIfIDIsInCorrectFormat(string id)
+        {
+            if (!int.TryParse(id, out int convertedID))
+            {
+                throw new InvalidIDFormatException("ID must be a number");
+            }
+            else if (convertedID <= 0)
+            {
+                throw new InvalidIDFormatException("ID must be greater than 0");
+            }
+            return convertedID;
+        }
     }
 }

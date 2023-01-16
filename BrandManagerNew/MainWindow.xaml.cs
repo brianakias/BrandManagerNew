@@ -22,6 +22,8 @@ namespace BrandManagerNew
             HideAll();
             brandRepository = new BrandRepository();
             brandRepository.CreateTableIfNotExists("brands");
+            validation = new UserInputValidation();
+            Domain = new Domain(validation, brandRepository);
         }
 
         /// <summary>
@@ -174,11 +176,9 @@ namespace BrandManagerNew
             bool inReadState = readBrandButton.BorderThickness == thicknessOfSelectedButton;
             bool inUpdateState = updateBrandButton.BorderThickness == thicknessOfSelectedButton;
             bool inDeleteState = deleteButton.BorderThickness == thicknessOfSelectedButton;
-            int id = idTextBox.Text == "" ? 0 : int.Parse(idTextBox.Text);
+            string id = idTextBox.Text;
             string name = brandNameTextBox.Text;
             bool flag = (bool)isEnabledBox.IsChecked;
-            validation = new UserInputValidation();
-            Domain = new Domain(validation, brandRepository);
 
             if (inCreateState)
             {
@@ -188,21 +188,18 @@ namespace BrandManagerNew
             }
             else if (inReadState)
             {
-                if (id == 0) return;
                 List<Brand> record = Domain.ReadRecord(id);
                 dataGrid.ItemsSource = record;
                 MessageBox.Show("Record read", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inUpdateState)
             {
-                if (id == 0) return;
                 int recordsAffected = Domain.UpdateRecord(id, name, flag);
                 Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record updated", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inDeleteState)
             {
-                if (id == 0) return;
                 int recordsAffected = Domain.DeleteRecord(id);
                 Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record deleted", "Success", MessageBoxButton.OK, MessageBoxImage.Information);

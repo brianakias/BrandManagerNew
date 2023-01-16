@@ -11,5 +11,7 @@ namespace BrandManagerNew.Interfaces
         void CheckIfBrandNameAlreadyExists(string brandName, List<string> brandNames);
 
         void CheckIfIDExists(int id, List<int> ids);
+
+        int CheckIfIDIsInCorrectFormat(string id);
     }
 }

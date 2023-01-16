@@ -10,212 +10,259 @@ namespace BrandManagerTests
 {
     public class Tests
     {
-        private Mock<IDataAccess> mockedRepo;
-        private Mock<IUserInputValidation> mockedValidation;
-        private Domain domain;
+        private Mock<IDataAccess> _brandRepoMock;
+        private Mock<IUserInputValidation> _validationMock;
+        private Domain _domain;
 
         [SetUp]
         public void Setup()
         {
-            mockedRepo = new Mock<IDataAccess>();
-            mockedValidation = new Mock<IUserInputValidation>();
-            domain = new Domain(mockedValidation.Object, mockedRepo.Object);
+            _validationMock = new Mock<IUserInputValidation>();
+            _brandRepoMock = new Mock<IDataAccess>();
+            _domain = new Domain(_validationMock.Object, _brandRepoMock.Object);
         }
 
+        #region CreateRecord tests
+
         [Test]
-        public void PrepareObjectForInsertion_ShouldReturnPassedBrand()
+        public void CreateRecord_NullBrandName_ThrowsArgumentNullException()
         {
             // Arrange
-            Brand brand = new Brand("Armani", true);
-            mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
+            string brandName = null;
+            bool flag = true;
 
             // Act
-            Brand result = domain.CreateRecord(brand.Name, brand.IsEnabled);
+            TestDelegate act = () => _domain.CreateRecord(brandName, flag);
 
             // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(brand.Name, Is.EqualTo(result.Name));
-                Assert.That(brand.IsEnabled, Is.EqualTo(result.IsEnabled));
-                mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Once);
-                mockedRepo.Verify(x => x.ReadBrandNames(), Times.Once);
-            });
+            var ex = Assert.Throws<ArgumentNullException>(act);
+            Assert.That(ex.Message, Is.EqualTo("Value cannot be null."));
         }
 
         [Test]
-        public void PrepareObjectForInsertion_WhenBrandNameAlreadyExists_ShouldThrowNameAlreadyExistsException()
+        public void CreateRecord_BrandNameIsNotNull_CallsCheckIfBrandNameIsEmpty()
         {
             // Arrange
-            Brand brand = new Brand("Dior", true);
-            List<string> brandNames = new List<string>() { "Dior", "Avene" };
-            mockedRepo.Setup(x => x.ReadBrandNames()).Returns(brandNames);
-            mockedValidation.Setup(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>())).Throws(new NameAlreadyExistsException($"A brand with name '{brand.Name}' already exists."));
-
-            // Act & Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Throws<NameAlreadyExistsException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
-                mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Once);
-                mockedRepo.Verify(x => x.ReadBrandNames(), Times.Once);
-            });
-        }
-
-        [Test]
-        public void PrepareObjectForInsertion_WhenBrandNameIsEmpty_ShouldThrowEmptyBrandNameException()
-        {
-            // Arrange
-            Brand brand = new Brand("", true);
-            mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
-            mockedValidation.Setup(x => x.CheckIfBrandNameIsEmpty(brand.Name)).Throws(new EmptyBrandNameException("Brand name cannot be empty"));
-
-            // Act and Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Throws<EmptyBrandNameException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
-                mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
-                mockedRepo.Verify(x => x.ReadBrandNames(), Times.Never);
-                mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Never);
-                mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Never);
-            });
-        }
-
-        [Test]
-        public void PrepareObjectForInsertion_WhenBrandNameIsNull_ShouldThrowArgumentNullException()
-        {
-            // Arrange
-            Brand brand = new Brand(null, true);
-            mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
-
-            // Act and Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Throws<ArgumentNullException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
-                mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Never);
-                mockedRepo.Verify(x => x.ReadBrandNames(), Times.Never);
-                mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Never);
-                mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Never);
-            });
-        }
-
-        [Test]
-        public void PrepareObjectForInsertion_WhenInvalidBrandNameIsPassed_ShouldThrowInvalidBrandNameException()
-        {
-            // Arrange
-            Brand brand = new Brand("Brand1", true);
-            mockedValidation.Setup(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name)).Throws(new InvalidBrandNameException("Invalid brand name"));
-
-            // Act and Assert
-            Assert.Multiple(() =>
-            {
-                Assert.Throws<InvalidBrandNameException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
-                mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Once);
-                mockedRepo.Verify(x => x.ReadBrandNames(), Times.Never);
-                mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Never);
-            });
-        }
-
-        [Test]
-        public void PrepareObjectForUpdating_WhenValidIDIsPassed_BrandObjectReturned()
-        {
-            // Arrange
-            Brand brand = new Brand(1, "Dior", true);
-            mockedRepo.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
-            mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
+            string brandName = "Brand A";
+            bool flag = true;
 
             // Act
-            Brand result = domain.UpdateRecord(brand.Id, brand.Name, brand.IsEnabled);
+            _domain.CreateRecord(brandName, flag);
 
             // Assert
-            Assert.Multiple(() =>
-            {
-                Assert.That(brand, Is.Not.Null);
-                Assert.That(brand.Id, Is.EqualTo(result.Id));
-                Assert.That(brand.Name, Is.EqualTo(result.Name));
-                Assert.That(brand.IsEnabled, Is.EqualTo(result.IsEnabled));
-                mockedValidation.Verify(x => x.CheckIfIDExists(brand.Id, It.IsAny<List<int>>()), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Once);
-                mockedRepo.Verify(x => x.ReadIDs(), Times.Once);
-                mockedRepo.Verify(x => x.ReadBrandNames(), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Once);
-                mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
-
-            });
-
+            _validationMock.Verify(x => x.CheckIfBrandNameIsEmpty(brandName), Times.Once);
         }
 
         [Test]
-        public void PrepareObjectForUpdating_WhenIdIsInvalid_ShouldThrowNonExistentIDException()
+        public void CreateRecord_BrandNameIsEmpty_ThrowsEmptyBrandNameException()
         {
             // Arrange
-            Brand brand = new Brand(20, "Dior", true);
-            mockedRepo.Setup(x => x.ReadIDs()).Returns(new List<int> { 1, 2, 3 });
-            mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string> { "Dior", "Decleor", "Caudalie" });
-            mockedValidation.Setup(x => x.CheckIfIDExists(brand.Id, It.IsAny<List<int>>())).Throws(new NonExistentIDException("Invalid ID passed"));
-
-            // Act and Assert
-            Assert.Throws<NonExistentIDException>(() => domain.UpdateRecord(brand.Id, brand.Name, brand.IsEnabled));
-            mockedValidation.Verify(x => x.CheckIfIDExists(brand.Id, It.IsAny<List<int>>()), Times.Once);
-            mockedRepo.Verify(x => x.ReadIDs(), Times.Once);
-        }
-
-        [Test]
-        public void PrepareObjectForUpdating_WhenBrandNameIsEmpty_ShouldThrowEmptyBrandNameException()
-        {
-            // Arrange
-            Brand brand = new Brand(1, "", true);
-            mockedRepo.Setup(x => x.ReadIDs()).Returns(new List<int> { 1, 2 });
-            mockedValidation.Setup(x => x.CheckIfBrandNameIsEmpty(brand.Name)).Throws(new EmptyBrandNameException("Brand name cannot be empty"));
-
-            // Act and Assert
-            Assert.Throws<EmptyBrandNameException>(() => domain.UpdateRecord(brand.Id, brand.Name, brand.IsEnabled));
-            mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
-        }
-
-        [Test]
-        public void PrepareObjectForReadingOrDeletion_ValidId_IdReturned()
-        {
-            // Arrange
-            int id = 1;
-            mockedRepo.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            string brandName = "";
+            bool flag = true;
+            _validationMock.Setup(x => x.CheckIfBrandNameIsEmpty(brandName))
+                .Throws(new EmptyBrandNameException("Brand name cannot be empty."));
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
 
             // Act
-            int returnedId = domain.PrepareObjectForReadingOrDeletion(id);
+            TestDelegate act = () => _domain.CreateRecord(brandName, flag);
 
             // Assert
-            Assert.That(id, Is.EqualTo(returnedId));
-            mockedValidation.Verify(x => x.CheckIfIDExists(id, It.IsAny<List<int>>()), Times.Once);
-            mockedRepo.Verify(x => x.ReadIDs(), Times.Once);
+            var ex = Assert.Throws<EmptyBrandNameException>(act);
+            Assert.That(ex.Message, Is.EqualTo("Brand name cannot be empty."));
         }
 
         [Test]
-        public void PrepareObjectForReadingOrDeletion_WhenIdIsInvalid_ShouldThrowNonExistentIDException()
+        public void CreateRecord_BrandNameIsNotNullOrEmpty_CallsCheckIfBrandNameHasInvalidCharacters()
         {
             // Arrange
-            int id = 10;
-            mockedRepo.Setup(x => x.ReadIDs()).Returns(new List<int> { 1, 2 });
-            mockedValidation.Setup(x => x.CheckIfIDExists(id, It.IsAny<List<int>>())).Throws(new NonExistentIDException("ID passed was invalid"));
-            Domain domain = new Domain(mockedValidation.Object, mockedRepo.Object);
+            string brandName = "Brand A";
+            bool flag = true;
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
 
-            // Act and Assert
-            Assert.Throws<NonExistentIDException>(() => domain.PrepareObjectForReadingOrDeletion(id));
-            mockedValidation.Verify(x => x.CheckIfIDExists(id, It.IsAny<List<int>>()), Times.Once);
+            // Act
+            _domain.CreateRecord(brandName, flag);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brandName), Times.Once);
         }
 
         [Test]
-        public void ConfirmOneRecordWasAffected_WhenRecordsAffectedIsNotOne_ShouldThrowUnexpectedRecordsAffectedException()
+        public void CreateRecord_BrandNameHasSymbolsExceptDash_ThrowsInvalidBrandNameException()
         {
             // Arrange
-            int recordsAffected = 2;
+            string brandName = "Brand A#";
+            bool flag = true;
+            _validationMock.Setup(x => x.CheckIfBrandNameHasInvalidCharacters(brandName))
+                .Throws(new InvalidBrandNameException("Brand name can only contain letters, numbers and dashes."));
 
             // Act and Assert
-            var ex = Assert.Throws<UnexpectedRecordsAffectedException>(() => domain.ConfirmOneRecordWasAffected(recordsAffected));
-            StringAssert.Contains("Wrong number of records affected. Expected: 1 record, actual: 2", ex.Message);
+            var ex = Assert.Throws<InvalidBrandNameException>(() => _domain.CreateRecord(brandName, flag));
+            _validationMock.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brandName), Times.Once);
+            StringAssert.AreEqualIgnoringCase("Brand name can only contain letters, numbers and dashes.", ex.Message);
         }
+
+        [Test]
+        public void CreateRecord_BrandNameIsOk_CallsReadBrandNames()
+        {
+            // Arrange
+            string brandName = "Brand A";
+            bool flag = true;
+
+            // Act 
+            _domain.CreateRecord(brandName, flag);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.ReadBrandNames(), Times.Once);
+        }
+
+        [Test]
+        public void CreateRecord_BrandNameIsOk_CallsCheckIfBrandNameAlreadyExists()
+        {
+            // Arrange
+            string brandName = "Brand A";
+            bool flag = true;
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
+
+            // Act 
+            _domain.CreateRecord(brandName, flag);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfBrandNameAlreadyExists(brandName, It.IsAny<List<string>>()), Times.Once);
+        }
+
+        [Test]
+        public void CreateRecord_BrandNameIsOKButAlreadyExists_ThrowsNameAlreadyExistsException()
+        {
+            // Arrange
+            string brandName = "Brand A";
+            bool flag = true;
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string> { brandName });
+            _validationMock.Setup(x => x.CheckIfBrandNameAlreadyExists(brandName, It.IsAny<List<string>>()))
+                .Throws(new NameAlreadyExistsException("Brand name already exists."));
+
+            // Act and Assert
+            var ex = Assert.Throws<NameAlreadyExistsException>(() => _domain.CreateRecord(brandName, flag));
+            _validationMock.Verify(x => x.CheckIfBrandNameAlreadyExists(brandName, It.IsAny<List<string>>()), Times.Once);
+            StringAssert.AreEqualIgnoringCase("Brand name already exists.", ex.Message);
+        }
+
+        [Test]
+        public void CreateRecord_BrandNameIsOk_CallsCreateRecord()
+        {
+            // Arrange
+            string brandName = "Brand A";
+            bool flag = true;
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
+            _brandRepoMock.Setup(x => x.CreateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act 
+            _domain.CreateRecord(brandName, flag);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.CreateRecord(It.Is<Brand>(b => b.Name == brandName && b.IsEnabled == flag)), Times.Once);
+        }
+
+        [Test]
+        public void CreateRecord_BrandNameIsOk_CreatesRecord()
+        {
+            // Arrange
+            string brandName = "Brand A";
+            bool flag = true;
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
+            _brandRepoMock.Setup(x => x.CreateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act 
+            int rowsAffected = _domain.CreateRecord(brandName, flag);
+
+            // Assert
+            Assert.That(rowsAffected, Is.EqualTo(1));
+        }
+
+        #endregion
+
+        #region ReadRecord tests
+
+        [Test]
+        public void ReadRecord_CallsCheckIfIDIsInCorrectFormat()
+        {
+            // Arrange
+            string id = "1";
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.ReadRecord(It.IsAny<int>())).Returns(new List<Brand>());
+
+            // Act 
+            _domain.ReadRecord(id);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
+        }
+
+        [Test]
+        public void ReadRecord_EmptyID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            string id = "";
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id))
+                .Throws(new InvalidIDFormatException("ID cannot be empty."));
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
+            StringAssert.AreEqualIgnoringCase("ID cannot be empty.", ex.Message);
+        }
+
+        [Test]
+        public void ReadRecord_NonDigitID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            string id = "a";
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id))
+                .Throws(new InvalidIDFormatException("ID must be a digit."));
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
+            StringAssert.AreEqualIgnoringCase("ID must be a digit.", ex.Message);
+        }
+
+        [Test]
+        public void ReadRecord_NonIntID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            string id = "1.1";
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id))
+                .Throws(new InvalidIDFormatException("ID must be an integer."));
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
+            StringAssert.AreEqualIgnoringCase("ID must be an integer.", ex.Message);
+        }
+
+
+
+
+
+
+
+
+
+        #endregion
+
+        #region UpdateRecord tests
+
+
+        #endregion
+
+        #region DeleteRecord tests
+
+
+        #endregion
+
+        #region ConfirmOneRecordWasAffected tests
+
+
+        #endregion
 
     }
 }

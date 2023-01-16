@@ -35,32 +35,42 @@ namespace BrandManagerNew
             return rowsAffected;
         }
 
-        public List<Brand> ReadRecord(int id)
+        public List<Brand> ReadRecord(string id)
         {
+            int convertedID = _validation.CheckIfIDIsInCorrectFormat(id);
             List<int> ids = _brandRepo.ReadIDs();
-            _validation.CheckIfIDExists(id, ids);
-            List<Brand> record = _brandRepo.ReadRecord(id);
+            _validation.CheckIfIDExists(convertedID, ids);
+            List<Brand> record = _brandRepo.ReadRecord(convertedID);
             return record;
         }
 
-        public int UpdateRecord(int id, string brandName, bool flag)
+        public int UpdateRecord(string id, string brandName, bool flag)
         {
+            int convertedID = _validation.CheckIfIDIsInCorrectFormat(id);
             List<int> ids = _brandRepo.ReadIDs();
-            _validation.CheckIfIDExists(id, ids);
-            _validation.CheckIfBrandNameHasInvalidCharacters(brandName);
-            List<string> brandNames = _brandRepo.ReadBrandNames();
-            _validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            _validation.CheckIfIDExists(convertedID, ids);
+            if (brandName == null)
+            {
+                throw new ArgumentNullException();
+            }
             _validation.CheckIfBrandNameIsEmpty(brandName);
-            Brand brand = new Brand(id, brandName, flag);
+            if (!string.IsNullOrEmpty(brandName))
+            {
+                _validation.CheckIfBrandNameHasInvalidCharacters(brandName);
+                List<string> brandNames = _brandRepo.ReadBrandNames();
+                _validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            }
+            Brand brand = new Brand(convertedID, brandName, flag);
             int rowsAffected = _brandRepo.UpdateRecord(brand);
             return rowsAffected;
         }
 
-        public int DeleteRecord(int id)
+        public int DeleteRecord(string id)
         {
+            int convertedID = _validation.CheckIfIDIsInCorrectFormat(id);
             List<int> ids = _brandRepo.ReadIDs();
-            _validation.CheckIfIDExists(id, ids);
-            int recordsAffected = _brandRepo.DeleteRecord(id);
+            _validation.CheckIfIDExists(convertedID, ids);
+            int recordsAffected = _brandRepo.DeleteRecord(convertedID);
             return recordsAffected;
         }
 
@@ -71,5 +81,6 @@ namespace BrandManagerNew
                 throw new UnexpectedRecordsAffectedException($"Wrong number of records affected. Expected: 1 record, actual: {recordsAffected}");
             }
         }
+
     }
 }
