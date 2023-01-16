@@ -30,7 +30,7 @@ namespace BrandManagerTests
             mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
 
             // Act
-            Brand result = domain.PrepareObjectForInsertion(brand.Name, brand.IsEnabled);
+            Brand result = domain.CreateRecord(brand.Name, brand.IsEnabled);
 
             // Assert
             Assert.Multiple(() =>
@@ -56,7 +56,7 @@ namespace BrandManagerTests
             // Act & Assert
             Assert.Multiple(() =>
             {
-                Assert.Throws<NameAlreadyExistsException>(() => domain.PrepareObjectForInsertion(brand.Name, brand.IsEnabled));
+                Assert.Throws<NameAlreadyExistsException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
                 mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Once);
                 mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
                 mockedValidation.Verify(x => x.CheckIfBrandNameAlreadyExists(brand.Name, It.IsAny<List<string>>()), Times.Once);
@@ -75,7 +75,7 @@ namespace BrandManagerTests
             // Act and Assert
             Assert.Multiple(() =>
             {
-                Assert.Throws<EmptyBrandNameException>(() => domain.PrepareObjectForInsertion(brand.Name, brand.IsEnabled));
+                Assert.Throws<EmptyBrandNameException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
                 mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
                 mockedRepo.Verify(x => x.ReadBrandNames(), Times.Never);
                 mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Never);
@@ -93,7 +93,7 @@ namespace BrandManagerTests
             // Act and Assert
             Assert.Multiple(() =>
             {
-                Assert.Throws<ArgumentNullException>(() => domain.PrepareObjectForInsertion(brand.Name, brand.IsEnabled));
+                Assert.Throws<ArgumentNullException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
                 mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Never);
                 mockedRepo.Verify(x => x.ReadBrandNames(), Times.Never);
                 mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Never);
@@ -111,7 +111,7 @@ namespace BrandManagerTests
             // Act and Assert
             Assert.Multiple(() =>
             {
-                Assert.Throws<InvalidBrandNameException>(() => domain.PrepareObjectForInsertion(brand.Name, brand.IsEnabled));
+                Assert.Throws<InvalidBrandNameException>(() => domain.CreateRecord(brand.Name, brand.IsEnabled));
                 mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
                 mockedValidation.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brand.Name), Times.Once);
                 mockedRepo.Verify(x => x.ReadBrandNames(), Times.Never);
@@ -128,7 +128,7 @@ namespace BrandManagerTests
             mockedRepo.Setup(x => x.ReadBrandNames()).Returns(new List<string>());
 
             // Act
-            Brand result = domain.PrepareObjectForUpdating(brand.Id, brand.Name, brand.IsEnabled);
+            Brand result = domain.UpdateRecord(brand.Id, brand.Name, brand.IsEnabled);
 
             // Assert
             Assert.Multiple(() =>
@@ -158,7 +158,7 @@ namespace BrandManagerTests
             mockedValidation.Setup(x => x.CheckIfIDExists(brand.Id, It.IsAny<List<int>>())).Throws(new NonExistentIDException("Invalid ID passed"));
 
             // Act and Assert
-            Assert.Throws<NonExistentIDException>(() => domain.PrepareObjectForUpdating(brand.Id, brand.Name, brand.IsEnabled));
+            Assert.Throws<NonExistentIDException>(() => domain.UpdateRecord(brand.Id, brand.Name, brand.IsEnabled));
             mockedValidation.Verify(x => x.CheckIfIDExists(brand.Id, It.IsAny<List<int>>()), Times.Once);
             mockedRepo.Verify(x => x.ReadIDs(), Times.Once);
         }
@@ -172,7 +172,7 @@ namespace BrandManagerTests
             mockedValidation.Setup(x => x.CheckIfBrandNameIsEmpty(brand.Name)).Throws(new EmptyBrandNameException("Brand name cannot be empty"));
 
             // Act and Assert
-            Assert.Throws<EmptyBrandNameException>(() => domain.PrepareObjectForUpdating(brand.Id, brand.Name, brand.IsEnabled));
+            Assert.Throws<EmptyBrandNameException>(() => domain.UpdateRecord(brand.Id, brand.Name, brand.IsEnabled));
             mockedValidation.Verify(x => x.CheckIfBrandNameIsEmpty(brand.Name), Times.Once);
         }
 

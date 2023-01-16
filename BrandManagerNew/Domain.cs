@@ -16,7 +16,7 @@ namespace BrandManagerNew
             _brandRepo = brandRepo;
         }
 
-        public Brand PrepareObjectForInsertion(string brandName, bool flag)
+        public int CreateRecord(string brandName, bool flag)
         {
             if (brandName == null)
             {
@@ -30,10 +30,20 @@ namespace BrandManagerNew
                 List<string> brandNames = _brandRepo.ReadBrandNames();
                 _validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
             }
-            return new Brand(brandName, flag);
+            Brand brand = new Brand(brandName, flag);
+            int rowsAffected = _brandRepo.CreateRecord(brand);
+            return rowsAffected;
         }
 
-        public Brand PrepareObjectForUpdating(int id, string brandName, bool flag)
+        public List<Brand> ReadRecord(int id)
+        {
+            List<int> ids = _brandRepo.ReadIDs();
+            _validation.CheckIfIDExists(id, ids);
+            List<Brand> record = _brandRepo.ReadRecord(id);
+            return record;
+        }
+
+        public int UpdateRecord(int id, string brandName, bool flag)
         {
             List<int> ids = _brandRepo.ReadIDs();
             _validation.CheckIfIDExists(id, ids);
@@ -42,14 +52,16 @@ namespace BrandManagerNew
             _validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
             _validation.CheckIfBrandNameIsEmpty(brandName);
             Brand brand = new Brand(id, brandName, flag);
-            return brand;
+            int rowsAffected = _brandRepo.UpdateRecord(brand);
+            return rowsAffected;
         }
 
-        public int PrepareObjectForReadingOrDeletion(int id)
+        public int DeleteRecord(int id)
         {
             List<int> ids = _brandRepo.ReadIDs();
             _validation.CheckIfIDExists(id, ids);
-            return id;
+            int recordsAffected = _brandRepo.DeleteRecord(id);
+            return recordsAffected;
         }
 
         public void ConfirmOneRecordWasAffected(int recordsAffected)
@@ -59,6 +71,5 @@ namespace BrandManagerNew
                 throw new UnexpectedRecordsAffectedException($"Wrong number of records affected. Expected: 1 record, actual: {recordsAffected}");
             }
         }
-
     }
 }

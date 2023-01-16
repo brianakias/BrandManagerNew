@@ -182,31 +182,29 @@ namespace BrandManagerNew
 
             if (inCreateState)
             {
-                Brand brand = Domain.PrepareObjectForInsertion(name, flag);
-                int recordsAffected = brandRepository.CreateRecord(brand);
+                int recordsAffected = Domain.CreateRecord(name, flag);
                 Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record created", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inReadState)
             {
                 if (id == 0) return;
-                Domain.PrepareObjectForReadingOrDeletion(id);
-                var record = brandRepository.ReadRecord(id);
+                List<Brand> record = Domain.ReadRecord(id);
                 dataGrid.ItemsSource = record;
-                MessageBox.Show("Record returned", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Record read", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inUpdateState)
             {
                 if (id == 0) return;
-                Brand brand = Domain.PrepareObjectForUpdating(id, name, flag);
-                brandRepository.UpdateRecord(brand);
+                int recordsAffected = Domain.UpdateRecord(id, name, flag);
+                Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record updated", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else if (inDeleteState)
             {
                 if (id == 0) return;
-                Domain.PrepareObjectForReadingOrDeletion(id);
-                brandRepository.DeleteRecord(id);
+                int recordsAffected = Domain.DeleteRecord(id);
+                Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record deleted", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
