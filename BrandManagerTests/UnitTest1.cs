@@ -35,7 +35,7 @@ namespace BrandManagerTests
             TestDelegate act = () => _domain.CreateRecord(brandName, flag);
 
             // Assert
-            var ex = Assert.Throws<ArgumentNullException>(act);
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(act);
             Assert.That(ex.Message, Is.EqualTo("Value cannot be null."));
         }
 
@@ -67,7 +67,7 @@ namespace BrandManagerTests
             TestDelegate act = () => _domain.CreateRecord(brandName, flag);
 
             // Assert
-            var ex = Assert.Throws<EmptyBrandNameException>(act);
+            EmptyBrandNameException ex = Assert.Throws<EmptyBrandNameException>(act);
             Assert.That(ex.Message, Is.EqualTo("Brand name cannot be empty."));
         }
 
@@ -96,7 +96,7 @@ namespace BrandManagerTests
                 .Throws(new InvalidBrandNameException("Brand name can only contain letters, numbers and dashes."));
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidBrandNameException>(() => _domain.CreateRecord(brandName, flag));
+            InvalidBrandNameException ex = Assert.Throws<InvalidBrandNameException>(() => _domain.CreateRecord(brandName, flag));
             _validationMock.Verify(x => x.CheckIfBrandNameHasInvalidCharacters(brandName), Times.Once);
             StringAssert.AreEqualIgnoringCase("Brand name can only contain letters, numbers and dashes.", ex.Message);
         }
@@ -141,7 +141,7 @@ namespace BrandManagerTests
                 .Throws(new NameAlreadyExistsException("Brand name already exists."));
 
             // Act and Assert
-            var ex = Assert.Throws<NameAlreadyExistsException>(() => _domain.CreateRecord(brandName, flag));
+            NameAlreadyExistsException ex = Assert.Throws<NameAlreadyExistsException>(() => _domain.CreateRecord(brandName, flag));
             _validationMock.Verify(x => x.CheckIfBrandNameAlreadyExists(brandName, It.IsAny<List<string>>()), Times.Once);
             StringAssert.AreEqualIgnoringCase("Brand name already exists.", ex.Message);
         }
@@ -206,7 +206,7 @@ namespace BrandManagerTests
                 .Throws(new InvalidIDFormatException("ID cannot be empty."));
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            InvalidIDFormatException ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
             _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
             StringAssert.AreEqualIgnoringCase("ID cannot be empty.", ex.Message);
         }
@@ -220,7 +220,7 @@ namespace BrandManagerTests
                 .Throws(new InvalidIDFormatException("ID must be a digit."));
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            InvalidIDFormatException ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
             _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
             StringAssert.AreEqualIgnoringCase("ID must be a digit.", ex.Message);
         }
@@ -234,7 +234,7 @@ namespace BrandManagerTests
                 .Throws(new InvalidIDFormatException("ID must be an integer."));
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            InvalidIDFormatException ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
             _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
             StringAssert.AreEqualIgnoringCase("ID must be an integer.", ex.Message);
         }
@@ -248,7 +248,7 @@ namespace BrandManagerTests
                 .Throws(new InvalidIDFormatException("ID must be a positive integer."));
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            InvalidIDFormatException ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
             _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
             StringAssert.AreEqualIgnoringCase("ID must be a positive integer.", ex.Message);
         }
@@ -266,54 +266,409 @@ namespace BrandManagerTests
             _brandRepoMock.Verify(x => x.ReadIDs(), Times.Once);
         }
 
-        //[Test]
-        //public void ReadRecord_IDIsOkButNotFoundInDB_ThrowsNonExistentIDException()
-        //{
-        //    // Arrange
-        //    string id = "1";
-        //    int convertedID = int.Parse(id);
-        //    List<int> ids = new List<int> { 2 };
-        //    _brandRepoMock.Setup(x => x.ReadIDs()).Returns(ids);
-        //    _validationMock.Setup(x => x.CheckIfIDExists(convertedID, ids))
-        //        .Throws(new NonExistentIDException("ID was not found in the DB"));
-
-        //    // Act and Assert
-        //    var ex = Assert.Throws<NonExistentIDException>(() => _domain.ReadRecord(id));
-        //    _validationMock.Verify(x => x.CheckIfIDExists(convertedID, ids), Times.Once);
-        //    StringAssert.AreEqualIgnoringCase("ID was not found in the DB.", ex.Message);
-
-        //}
-
         [Test]
         public void ReadRecord_IDIsOkButNotFoundInDB_ThrowsNonExistentIDException()
         {
             // Arrange
-            _validationMock.Setup(x => x.CheckIfIDExists(1, new List<int> { 2 }))
-                .Throws(new NonExistentIDException("ID was not found in the DB"));
-            _brandRepoMock.Setup(r => r.ReadIDs()).Returns(new List<int> { 2 });
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 2 });
+            _validationMock.Setup(x => x.CheckIfIDExists(It.IsAny<int>(), It.IsAny<List<int>>())).Throws(new NonExistentIDException(""));
+            var domain = new Domain(_validationMock.Object, _brandRepoMock.Object);
 
             // Act and Assert
-            Assert.Throws<NonExistentIDException>(() => _domain.ReadRecord("1"));
-
+            Assert.Throws<NonExistentIDException>(() => domain.ReadRecord("1"));
         }
 
+        [Test]
+        public void ReadRecord_IDIsOkAndFoundInDB_CallsReadRecord()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.ReadRecord(It.IsAny<int>()));
 
+            // Act
+            _domain.ReadRecord("1");
 
+            // Assert
+            _brandRepoMock.Verify(x => x.ReadRecord(1), Times.Once);
+        }
+
+        [Test]
+        public void ReadRecord_IDIsOkAndFoundInDB_ReadsRecord()
+        {
+            // Arrange
+            List<Brand> expectedRecord = new List<Brand> { new Brand(1, "TestBrand", true) };
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.ReadRecord(1)).Returns(expectedRecord);
+
+            // Act
+            List<Brand> actualRecord = _domain.ReadRecord("1");
+
+            // Assert
+            Assert.That(actualRecord, Is.EqualTo(expectedRecord));
+        }
 
 
         #endregion
 
         #region UpdateRecord tests
 
+        [Test]
+        public void UpdateRecord_CallsCheckIfIDIsInCorrectFormat()
+        {
+            // Arrange
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand", true);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat("1"), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_EmptyID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.UpdateRecord("", "TestBrand", true));
+        }
+
+        [Test]
+        public void UpdateRecord_NonDigitID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("a")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.UpdateRecord("a", "TestBrand", true));
+        }
+
+        [Test]
+        public void UpdateRecord_NonIntID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("1.1")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.UpdateRecord("1.1", "TestBrand", true));
+        }
+
+        [Test]
+        public void UpdateRecord_NegativeIntID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("-1")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.UpdateRecord("-1", "TestBrand", true));
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOk_CallsReadIDs()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand", true);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.ReadIDs(), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkButNotFoundInDB_ThrowsNonExistentIDException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 2 });
+            _validationMock.Setup(x => x.CheckIfIDExists(1, It.IsAny<List<int>>())).Throws(new NonExistentIDException(""));
+
+            // Act and Assert
+            Assert.Throws<NonExistentIDException>(() => _domain.UpdateRecord("1", "TestBrand", true));
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndNullBrandName_ThrowsArgumentNullException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+
+            // Act and Assert
+            Assert.Throws<ArgumentNullException>(() => _domain.UpdateRecord("1", null, true));
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsNotNull_CallsCheckIfBrandNameIsEmpty()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand", true);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfBrandNameIsEmpty("TestBrand"), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsEmpty_ThrowsEmptyBrandNameException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _validationMock.Setup(x => x.CheckIfBrandNameIsEmpty("")).Throws(new EmptyBrandNameException(""));
+
+            // Act and Assert
+            Assert.Throws<EmptyBrandNameException>(() => _domain.UpdateRecord("1", "", true));
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsNotNullOrEmpty_CallsCheckIfBrandNameHasInvalidCharacters()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand", true);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfBrandNameHasInvalidCharacters("TestBrand"), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameHasSymbolsExceptDash_ThrowsInvalidBrandNameException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _validationMock.Setup(x => x.CheckIfBrandNameHasInvalidCharacters("TestBrand!")).Throws(new InvalidBrandNameException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidBrandNameException>(() => _domain.UpdateRecord("1", "TestBrand!", true));
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsOk_CallsReadBrandNames()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand-Test", true);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.ReadBrandNames(), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsOk_CallsCheckIfBrandNameAlreadyExists()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string> { "TestBrand" });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand-Test", true);
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfBrandNameAlreadyExists("TestBrand-Test", new List<string> { "TestBrand" }), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsOKButAlreadyExists_ThrowsNameAlreadyExistsException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.ReadBrandNames()).Returns(new List<string> { "TestBrand" });
+            _validationMock.Setup(x => x.CheckIfBrandNameAlreadyExists("TestBrand", new List<string> { "TestBrand" })).Throws(new NameAlreadyExistsException(""));
+
+            // Act and Assert
+            Assert.Throws<NameAlreadyExistsException>(() => _domain.UpdateRecord("1", "TestBrand", true));
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsOk_CallsUpdateRecord()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            _domain.UpdateRecord("1", "TestBrand-Test", true);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.UpdateRecord(It.IsAny<Brand>()), Times.Once);
+        }
+
+        [Test]
+        public void UpdateRecord_IDIsOkAndFoundInDBAndBrandNameIsOk_UpdatesRecord()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+            _brandRepoMock.Setup(x => x.UpdateRecord(It.IsAny<Brand>())).Returns(1);
+
+            // Act
+            int rowsAffected = _domain.UpdateRecord("1", "TestBrand", true);
+
+            // Assert
+            Assert.That(rowsAffected, Is.EqualTo(1));
+        }
 
         #endregion
 
         #region DeleteRecord tests
 
+        [Test]
+        public void DeleteRecord_CallsCheckIfIDIsInCorrectFormat()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(It.IsAny<string>())).Returns(1);
+            _brandRepoMock.Setup(x => x.ReadIDs()).Returns(new List<int> { 1 });
+
+            // Act
+            _domain.DeleteRecord("1");
+
+            // Assert
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat("1"), Times.Once);
+        }
+
+        [Test]
+        public void DeleteRecord_EmptyID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.DeleteRecord(""));
+        }
+
+        [Test]
+        public void DeleteRecord_NonDigitID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("abc")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.DeleteRecord("abc"));
+        }
+
+        [Test]
+        public void DeleteRecord_NonIntID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("1.5")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.DeleteRecord("1.5"));
+        }
+
+        [Test]
+        public void DeleteRecord_NegativeIntID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat("-1")).Throws(new InvalidIDFormatException(""));
+
+            // Act and Assert
+            Assert.Throws<InvalidIDFormatException>(() => _domain.DeleteRecord("-1"));
+        }
+
+        [Test]
+        public void DeleteRecord_IDIsOk_CallsReadIDs()
+        {
+            // Arrange
+            int validID = 1;
+            string id = validID.ToString();
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id)).Returns(validID);
+
+            // Act
+            _domain.DeleteRecord(id);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.ReadIDs(), Times.Once);
+        }
+
+        [Test]
+        public void DeleteRecord_IDIsOkButNotFoundInDB_ThrowsNonExistentIDException()
+        {
+            // Arrange
+            int validID = 1;
+            string id = validID.ToString();
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id)).Returns(validID);
+            _validationMock.Setup(x => x.CheckIfIDExists(validID, It.IsAny<List<int>>())).Throws(new NonExistentIDException(""));
+
+            // Act and Assert
+            Assert.Throws<NonExistentIDException>(() => _domain.DeleteRecord(id));
+        }
+
+        [Test]
+        public void DeleteRecord_IDIsOkAndFoundInDB_CallsDeleteRecord()
+        {
+            // Arrange
+            int validID = 1;
+            string id = validID.ToString();
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id)).Returns(validID);
+            _validationMock.Setup(x => x.CheckIfIDExists(validID, It.IsAny<List<int>>()));
+
+            // Act
+            _domain.DeleteRecord(id);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.DeleteRecord(validID), Times.Once);
+        }
+
+        [Test]
+        public void DeleteRecord_IDIsOkAndFoundInDB_DeletesRecord()
+        {
+            // Arrange
+            int validID = 1;
+            string id = validID.ToString();
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id)).Returns(validID);
+            _validationMock.Setup(x => x.CheckIfIDExists(validID, It.IsAny<List<int>>()));
+            _brandRepoMock.Setup(x => x.DeleteRecord(validID)).Returns(1);
+
+            // Act
+            int result = _domain.DeleteRecord(id);
+
+            // Assert
+            Assert.That(result, Is.EqualTo(1));
+        }
 
         #endregion
 
         #region ConfirmOneRecordWasAffected tests
+
+        [Test]
+        public void CreateRecord_NotOneRecordWasAffected_ThrowsUnexpectedRecordsAffectedException()
+        {
+            // Arrange
+            int rowsAffected = 2;
+            string brandName = "Test Brand";
+            bool flag = true;
+            _brandRepoMock.Setup(x => x.CreateRecord(It.IsAny<Brand>())).Returns(rowsAffected);
+
+            // Act/Assert
+            Assert.Throws<UnexpectedRecordsAffectedException>(() => _domain.CreateRecord(brandName, flag));
+        }
 
 
         #endregion
