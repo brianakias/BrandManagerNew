@@ -14,6 +14,7 @@ namespace BrandManagerNew
         {
             _validation = validation;
             _brandRepo = brandRepo;
+            _brandRepo.CreateTableIfNotExists("brands");
         }
 
         public int CreateRecord(string brandName, bool flag)

@@ -12,8 +12,8 @@ namespace BrandManagerNew
     public partial class MainWindow : Window
     {
         public Domain Domain { get; set; }
-        public BrandRepository brandRepository { get; set; }
-        public UserInputValidation validation { get; set; }
+        private BrandRepository brandRepository { get; set; }
+        private UserInputValidation validation { get; set; }
 
         private Thickness thicknessOfSelectedButton = new Thickness(3);
         public MainWindow()
@@ -21,7 +21,6 @@ namespace BrandManagerNew
             InitializeComponent();
             HideAll();
             brandRepository = new BrandRepository();
-            brandRepository.CreateTableIfNotExists("brands");
             validation = new UserInputValidation();
             Domain = new Domain(validation, brandRepository);
         }
