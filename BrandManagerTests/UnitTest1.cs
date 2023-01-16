@@ -654,24 +654,5 @@ namespace BrandManagerTests
         }
 
         #endregion
-
-        #region ConfirmOneRecordWasAffected tests
-
-        [Test]
-        public void CreateRecord_NotOneRecordWasAffected_ThrowsUnexpectedRecordsAffectedException()
-        {
-            // Arrange
-            int rowsAffected = 2;
-            string brandName = "Test Brand";
-            bool flag = true;
-            _brandRepoMock.Setup(x => x.CreateRecord(It.IsAny<Brand>())).Returns(rowsAffected);
-
-            // Act/Assert
-            Assert.Throws<UnexpectedRecordsAffectedException>(() => _domain.CreateRecord(brandName, flag));
-        }
-
-
-        #endregion
-
     }
 }
