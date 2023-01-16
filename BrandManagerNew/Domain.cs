@@ -1,44 +1,54 @@
 ﻿
+using BrandManagerNew.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace BrandManagerNew
 {
     public class Domain : IDomain
     {
-        private UserInputValidation Validation { get; set; }
-        public BrandRepository BrandRepo { get; set; }
-        public Domain(UserInputValidation validation, BrandRepository brandRepo)
+        private readonly IDataAccess _brandRepo;
+        private readonly IUserInputValidation _validation;
+
+        public Domain(IUserInputValidation validation, IDataAccess brandRepo)
         {
-            Validation = validation;
-            BrandRepo = brandRepo;
-
+            _validation = validation;
+            _brandRepo = brandRepo;
         }
-
 
         public Brand PrepareObjectForInsertion(string brandName, bool flag)
         {
-            Validation.CheckIfBrandNameHasInvalidCharacters(brandName);
-            List<string> brandNames = BrandRepo.ReadBrandNames();
-            Validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            if (brandName == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            _validation.CheckIfBrandNameIsEmpty(brandName);
+            if (!string.IsNullOrEmpty(brandName))
+            {
+                _validation.CheckIfBrandNameHasInvalidCharacters(brandName);
+                List<string> brandNames = _brandRepo.ReadBrandNames();
+                _validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            }
             return new Brand(brandName, flag);
         }
 
         public Brand PrepareObjectForUpdating(int id, string brandName, bool flag)
         {
-            List<int> ids = BrandRepo.ReadIDs();
-            Validation.CheckIfIDExists(id, ids);
-            Validation.CheckIfBrandNameHasInvalidCharacters(brandName);
-            List<string> brandNames = BrandRepo.ReadBrandNames();
-            Validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
-            Brand brand = new Brand(brandName, flag);
-            brand.Id = id;
+            List<int> ids = _brandRepo.ReadIDs();
+            _validation.CheckIfIDExists(id, ids);
+            _validation.CheckIfBrandNameHasInvalidCharacters(brandName);
+            List<string> brandNames = _brandRepo.ReadBrandNames();
+            _validation.CheckIfBrandNameAlreadyExists(brandName, brandNames);
+            _validation.CheckIfBrandNameIsEmpty(brandName);
+            Brand brand = new Brand(id, brandName, flag);
             return brand;
         }
 
-        public int PrepareObjectForDeletion(int id)
+        public int PrepareObjectForReadingOrDeletion(int id)
         {
-            List<int> ids = BrandRepo.ReadIDs();
-            Validation.CheckIfIDExists(id, ids);
+            List<int> ids = _brandRepo.ReadIDs();
+            _validation.CheckIfIDExists(id, ids);
             return id;
         }
 
@@ -46,8 +56,9 @@ namespace BrandManagerNew
         {
             if (recordsAffected != 1)
             {
-                throw new UnexpectedRecordsAffectedException($"Wrong number of records affected. Expected: 1 record, actual: {recordsAffected} records instead");
+                throw new UnexpectedRecordsAffectedException($"Wrong number of records affected. Expected: 1 record, actual: {recordsAffected}");
             }
         }
+
     }
 }

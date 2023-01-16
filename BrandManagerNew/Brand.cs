@@ -12,5 +12,12 @@ namespace BrandManagerNew
             Name = name;
             IsEnabled = isEnabled;
         }
+
+        public Brand(int id, string name, bool isEnabled)
+        {
+            Id = id;
+            Name = name;
+            IsEnabled = isEnabled;
+        }
     }
 }

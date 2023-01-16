@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace BrandManagerNew
 {
@@ -13,6 +14,8 @@ namespace BrandManagerNew
         public Domain Domain { get; set; }
         public BrandRepository brandRepository { get; set; }
         public UserInputValidation validation { get; set; }
+
+        private Thickness thicknessOfSelectedButton = new Thickness(3);
         public MainWindow()
         {
             InitializeComponent();
@@ -29,7 +32,7 @@ namespace BrandManagerNew
         private void Button_Click_CreateBrand(object sender, RoutedEventArgs e)
         {
             InitializeUIElements();
-            createBrandButton.BorderThickness = new Thickness(3);
+            createBrandButton.BorderThickness = thicknessOfSelectedButton;
             idTextBox.IsReadOnly = true;
             idTextBox.Background = Brushes.LightGray;
             brandNameTextBox.IsReadOnly = false;
@@ -40,16 +43,12 @@ namespace BrandManagerNew
         private void Button_Click_ReadBrands(object sender, RoutedEventArgs e)
         {
             InitializeUIElements();
-            readBrandButton.BorderThickness = new Thickness(3);
+            readBrandButton.BorderThickness = thicknessOfSelectedButton;
             idTextBox.IsReadOnly = false;
             idTextBox.Background = Brushes.White;
-            brandNameTextBox.IsReadOnly = false;
-            brandNameTextBox.Background = Brushes.White;
-            isEnabledBox.IsEnabled = true;
-
-            BrandRepository brandRepository = new BrandRepository();
-            var brands = brandRepository.ReadRecords();
-            dataGrid.ItemsSource = brands;
+            brandNameTextBox.IsReadOnly = true;
+            brandNameTextBox.Background = Brushes.LightGray;
+            isEnabledBox.IsEnabled = false;
         }
 
         /// <summary>
@@ -60,7 +59,7 @@ namespace BrandManagerNew
         private void Button_Click_UpdateBrand(object sender, RoutedEventArgs e)
         {
             InitializeUIElements();
-            updateBrandButton.BorderThickness = new Thickness(3);
+            updateBrandButton.BorderThickness = thicknessOfSelectedButton;
             idTextBox.IsReadOnly = false;
             idTextBox.Background = Brushes.White;
             brandNameTextBox.IsReadOnly = false;
@@ -77,7 +76,7 @@ namespace BrandManagerNew
         private void Button_Click_DeleteBrand(object sender, RoutedEventArgs e)
         {
             InitializeUIElements();
-            deleteButton.BorderThickness = new Thickness(3);
+            deleteButton.BorderThickness = thicknessOfSelectedButton;
             idTextBox.IsReadOnly = false;
             idTextBox.Background = Brushes.White;
             brandNameTextBox.IsReadOnly = true;
@@ -171,9 +170,10 @@ namespace BrandManagerNew
         /// <param name="e"></param>
         private void SubmitButton_Click(object sender, RoutedEventArgs e)
         {
-            bool inCreateState = idTextBox.IsReadOnly == true && brandNameTextBox.IsReadOnly == false && isEnabledBox.IsEnabled == true;
-            bool inUpdateState = idTextBox.IsReadOnly == false && brandNameTextBox.IsReadOnly == false && isEnabledBox.IsEnabled == true;
-            bool inDeleteState = idTextBox.IsReadOnly == false && brandNameTextBox.IsReadOnly == true && isEnabledBox.IsEnabled == false;
+            bool inCreateState = createBrandButton.BorderThickness == thicknessOfSelectedButton;
+            bool inReadState = readBrandButton.BorderThickness == thicknessOfSelectedButton;
+            bool inUpdateState = updateBrandButton.BorderThickness == thicknessOfSelectedButton;
+            bool inDeleteState = deleteButton.BorderThickness == thicknessOfSelectedButton;
             int id = idTextBox.Text == "" ? 0 : int.Parse(idTextBox.Text);
             string name = brandNameTextBox.Text;
             bool flag = (bool)isEnabledBox.IsChecked;
@@ -187,6 +187,14 @@ namespace BrandManagerNew
                 Domain.ConfirmOneRecordWasAffected(recordsAffected);
                 MessageBox.Show("Record created", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+            else if (inReadState)
+            {
+                if (id == 0) return;
+                Domain.PrepareObjectForReadingOrDeletion(id);
+                var record = brandRepository.ReadRecord(id);
+                dataGrid.ItemsSource = record;
+                MessageBox.Show("Record returned", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
             else if (inUpdateState)
             {
                 if (id == 0) return;
@@ -197,7 +205,7 @@ namespace BrandManagerNew
             else if (inDeleteState)
             {
                 if (id == 0) return;
-                Domain.PrepareObjectForDeletion(id);
+                Domain.PrepareObjectForReadingOrDeletion(id);
                 brandRepository.DeleteRecord(id);
                 MessageBox.Show("Record deleted", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }

@@ -11,6 +11,8 @@ namespace BrandManagerNew
 
         private static string connectionString = Environment.GetEnvironmentVariable("postgresConnectionString");
 
+        #region crud operations
+
         public int CreateRecord(Brand brand)
         {
             using (var connection = new NpgsqlConnection(connectionString))
@@ -32,7 +34,7 @@ namespace BrandManagerNew
             return RecordsAffected;
         }
 
-        public List<Brand> ReadRecords()
+        public List<Brand> ReadRecord(int id)
         {
             List<Brand> brands = new List<Brand>();
 
@@ -40,8 +42,10 @@ namespace BrandManagerNew
             {
                 connection.Open();
 
-                using (NpgsqlCommand command = new NpgsqlCommand("SELECT * FROM brands ORDER BY id", connection))
+                using (NpgsqlCommand command = new NpgsqlCommand("SELECT * FROM brands WHERE id = @id", connection))
                 {
+                    command.Parameters.AddWithValue("id", id);
+
                     using (NpgsqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -57,6 +61,50 @@ namespace BrandManagerNew
             }
         }
 
+        public int UpdateRecord(Brand brand)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new NpgsqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = "UPDATE brands SET name = @name, is_enabled = @is_enabled WHERE id = @id";
+                    command.Parameters.AddWithValue("id", brand.Id);
+                    command.Parameters.AddWithValue("@name", brand.Name);
+                    command.Parameters.AddWithValue("@is_enabled", brand.IsEnabled);
+                    RecordsAffected = command.ExecuteNonQuery();
+                }
+
+                connection.Close();
+            }
+
+            return RecordsAffected;
+        }
+
+        public int DeleteRecord(int id)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+
+                using (var command = new NpgsqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = "DELETE FROM brands WHERE id = @id";
+                    command.Parameters.AddWithValue("id", id);
+                    RecordsAffected = command.ExecuteNonQuery();
+                }
+
+                connection.Close();
+            }
+
+            return RecordsAffected;
+        }
+        #endregion
+
+        #region helper methods
         public List<string> ReadBrandNames()
         {
             List<string> brandNames = new List<string>();
@@ -104,48 +152,6 @@ namespace BrandManagerNew
 
         }
 
-        public int UpdateRecord(Brand brand)
-        {
-            using (var connection = new NpgsqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (var command = new NpgsqlCommand())
-                {
-                    command.Connection = connection;
-                    command.CommandText = "UPDATE brands SET name = @name, is_enabled = @is_enabled WHERE id = @id";
-                    command.Parameters.AddWithValue("id", brand.Id);
-                    command.Parameters.AddWithValue("@name", brand.Name);
-                    command.Parameters.AddWithValue("@is_enabled", brand.IsEnabled);
-                    RecordsAffected = command.ExecuteNonQuery();
-                }
-
-                connection.Close();
-            }
-
-            return RecordsAffected;
-        }
-
-        public int DeleteRecord(int id)
-        {
-            using (var connection = new NpgsqlConnection(connectionString))
-            {
-                connection.Open();
-
-                using (var command = new NpgsqlCommand())
-                {
-                    command.Connection = connection;
-                    command.CommandText = "DELETE FROM brands WHERE id = @id";
-                    command.Parameters.AddWithValue("id", id);
-                    RecordsAffected = command.ExecuteNonQuery();
-                }
-
-                connection.Close();
-            }
-
-            return RecordsAffected;
-        }
-
         public void CreateTableIfNotExists(string tableName)
         {
 
@@ -164,5 +170,6 @@ namespace BrandManagerNew
             }
 
         }
+        #endregion
     }
 }

@@ -1,10 +1,12 @@
 ﻿
+using BrandManagerNew.Exceptions;
+using BrandManagerNew.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace BrandManagerNew
 {
-    public class UserInputValidation
+    public class UserInputValidation : IUserInputValidation
     {
         public void CheckIfBrandNameHasInvalidCharacters(string brandName)
         {
@@ -13,6 +15,14 @@ namespace BrandManagerNew
             if (hasInvalidCharacters)
             {
                 throw new InvalidBrandNameException("The brand name should be consisted of letters, whitespaces and dashes ( - ) only");
+            }
+        }
+
+        public void CheckIfBrandNameIsEmpty(string brandName)
+        {
+            if (string.IsNullOrEmpty(brandName))
+            {
+                throw new EmptyBrandNameException("The brand name should not be empty");
             }
         }
 
