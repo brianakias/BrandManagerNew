@@ -239,9 +239,63 @@ namespace BrandManagerTests
             StringAssert.AreEqualIgnoringCase("ID must be an integer.", ex.Message);
         }
 
+        [Test]
+        public void ReadRecord_NegativeIntID_ThrowsInvalidIDFormatException()
+        {
+            // Arrange
+            string id = "-1";
+            _validationMock.Setup(x => x.CheckIfIDIsInCorrectFormat(id))
+                .Throws(new InvalidIDFormatException("ID must be a positive integer."));
 
+            // Act and Assert
+            var ex = Assert.Throws<InvalidIDFormatException>(() => _domain.ReadRecord(id));
+            _validationMock.Verify(x => x.CheckIfIDIsInCorrectFormat(id), Times.Once);
+            StringAssert.AreEqualIgnoringCase("ID must be a positive integer.", ex.Message);
+        }
 
+        [Test]
+        public void ReadRecord_IDIsOk_CallsReadIDs()
+        {
+            // Arrange
+            string id = "1";
 
+            // Act 
+            _domain.ReadRecord(id);
+
+            // Assert
+            _brandRepoMock.Verify(x => x.ReadIDs(), Times.Once);
+        }
+
+        //[Test]
+        //public void ReadRecord_IDIsOkButNotFoundInDB_ThrowsNonExistentIDException()
+        //{
+        //    // Arrange
+        //    string id = "1";
+        //    int convertedID = int.Parse(id);
+        //    List<int> ids = new List<int> { 2 };
+        //    _brandRepoMock.Setup(x => x.ReadIDs()).Returns(ids);
+        //    _validationMock.Setup(x => x.CheckIfIDExists(convertedID, ids))
+        //        .Throws(new NonExistentIDException("ID was not found in the DB"));
+
+        //    // Act and Assert
+        //    var ex = Assert.Throws<NonExistentIDException>(() => _domain.ReadRecord(id));
+        //    _validationMock.Verify(x => x.CheckIfIDExists(convertedID, ids), Times.Once);
+        //    StringAssert.AreEqualIgnoringCase("ID was not found in the DB.", ex.Message);
+
+        //}
+
+        [Test]
+        public void ReadRecord_IDIsOkButNotFoundInDB_ThrowsNonExistentIDException()
+        {
+            // Arrange
+            _validationMock.Setup(x => x.CheckIfIDExists(1, new List<int> { 2 }))
+                .Throws(new NonExistentIDException("ID was not found in the DB"));
+            _brandRepoMock.Setup(r => r.ReadIDs()).Returns(new List<int> { 2 });
+
+            // Act and Assert
+            Assert.Throws<NonExistentIDException>(() => _domain.ReadRecord("1"));
+
+        }
 
 
 
